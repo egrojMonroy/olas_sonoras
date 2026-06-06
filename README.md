@@ -15,7 +15,7 @@ Abre http://127.0.0.1:8765
 Tras el primer push a `main`:
 
 1. En GitHub: **Settings → Pages → Build and deployment → Source: GitHub Actions**
-2. El workflow publica la app en `https://<usuario>.github.io/SCORES-Symphony/`
+2. El workflow publica la app en `https://egrojMonroy.github.io/olas_sonoras/`
 
 ## Controles
 
