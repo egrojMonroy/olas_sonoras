@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SCORES — Olas de playa</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>Olas de playa</h1>
+      <p class="subtitle">Síntesis procedural · rotación espacial · transición al agua</p>
+    </header>
+
+    <section class="transport">
+      <button id="btnListen" class="btn btn-primary">Escuchar</button>
+      <button id="btnStop" class="btn btn-stop" disabled>Parar audio</button>
+      <button id="btnRecord" class="btn btn-record">● Grabar</button>
+      <label class="format-select">
+        Formato
+        <select id="recordFormat">
+          <option value="wav" selected>WAV (16-bit)</option>
+          <option value="webm">WebM</option>
+        </select>
+      </label>
+      <label class="format-select fade-select">
+        Suavizado (s)
+        <input type="range" id="recordFade" min="0" max="15" value="4" />
+        <span class="val" id="recordFadeVal">4 s</span>
+      </label>
+      <span id="recordStatus" class="record-status"></span>
+    </section>
+
+    <section class="presets-panel">
+      <h2>Presets</h2>
+      <p class="presets-hint">Escenarios calibrados para sonido más natural. Pulsa uno y ajusta fino después.</p>
+      <label class="preset-transition">
+        Transición entre presets (s)
+        <input type="range" id="presetTransition" min="0" max="60" value="10" />
+        <span class="val" id="presetTransitionVal">10 s</span>
+      </label>
+      <p class="presets-transition-note">0 s = cambio instantáneo · 10–30 s = morph suave recomendado</p>
+      <div id="presetGrid" class="preset-grid"></div>
+    </section>
+
+    <section class="mode-panel">
+      <h2>Escenario</h2>
+      <div class="mode-toggle">
+        <button id="btnBeach" class="btn btn-mode active" data-mode="beach">
+          <strong>Arena mirando al mar</strong>
+          <span>Olas en semicírculo (180°). Al girar, el mar queda a un lado.</span>
+        </button>
+        <button id="btnBay" class="btn btn-mode" data-mode="bay">
+          <strong>Bahía</strong>
+          <span>Olas en 360°. El wash te rodea por completo.</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="controls-grid">
+      <div class="control-group">
+        <h2>Olas</h2>
+        <label>
+          Calma / intensidad
+          <input type="range" id="calmness" min="0" max="100" value="72" />
+          <span class="val" id="calmnessVal">72</span>
+        </label>
+        <label>
+          Duración de ola (s)
+          <input type="range" id="waveDuration" min="8" max="60" value="28" />
+          <span class="val" id="waveDurationVal">28</span>
+        </label>
+        <label>
+          Velocidad del frente
+          <input type="range" id="waveSpeed" min="1" max="100" value="25" />
+          <span class="val" id="waveSpeedVal">25</span>
+        </label>
+        <label>
+          Separación entre olas (s)
+          <input type="range" id="waveInterval" min="3" max="45" value="12" />
+          <span class="val" id="waveIntervalVal">12</span>
+        </label>
+      </div>
+
+      <div class="control-group">
+        <h2>Phaser (barrido)</h2>
+        <label>
+          Velocidad del barrido
+          <input type="range" id="phaserRate" min="1" max="100" value="12" />
+          <span class="val" id="phaserRateVal">12</span>
+        </label>
+        <label>
+          Profundidad
+          <input type="range" id="phaserDepth" min="0" max="100" value="55" />
+          <span class="val" id="phaserDepthVal">55</span>
+        </label>
+        <label>
+          Mezcla phaser
+          <input type="range" id="phaserMix" min="0" max="100" value="45" />
+          <span class="val" id="phaserMixVal">45</span>
+        </label>
+      </div>
+
+      <div class="control-group">
+        <h2>Espacio</h2>
+        <label>
+          Rotación automática (°/min)
+          <input type="range" id="rotationSpeed" min="0" max="100" value="18" />
+          <span class="val" id="rotationSpeedVal">18</span>
+        </label>
+        <label>
+          Rotación manual (°)
+          <input type="range" id="manualYaw" min="0" max="360" value="0" />
+          <span class="val" id="manualYawVal">0°</span>
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" id="autoRotate" checked />
+          Rotación automática activa
+        </label>
+        <label>
+          Ancho espacial de ola
+          <input type="range" id="waveSpread" min="1" max="100" value="35" />
+          <span class="val" id="waveSpreadVal">35</span>
+        </label>
+      </div>
+
+      <div class="control-group">
+        <h2>Agua</h2>
+        <label>
+          Profundidad / entrada al agua
+          <input type="range" id="waterDepth" min="0" max="100" value="0" />
+          <span class="val" id="waterDepthVal">0</span>
+        </label>
+        <label>
+          Volumen general
+          <input type="range" id="masterVolume" min="0" max="100" value="70" />
+          <span class="val" id="masterVolumeVal">70</span>
+        </label>
+      </div>
+    </section>
+
+    <section class="viz-panel">
+      <canvas id="vizCanvas" width="320" height="320" aria-label="Mapa top-down del oyente y las olas"></canvas>
+      <p class="viz-legend">
+        <span class="dot listener"></span> Oyente (centro)
+        <span class="dot wave"></span> Frente de ola
+        <span class="dot sea-beach"></span> Arco mar (modo arena)
+      </p>
+    </section>
+
+    <footer>
+      <p>Auriculares recomendados. <strong>Grabar</strong> inicia el audio con fade-in suave. Usa <strong>Parar audio</strong> para silenciar.</p>
+    </footer>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
