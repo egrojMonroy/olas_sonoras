@@ -1,8 +1,10 @@
+const PRESET_DEFAULTS = { glassSparkle: 0 };
+
 const NUMERIC_KEYS = [
   'calmness', 'waveDuration', 'waveSpeed', 'waveInterval',
   'phaserRate', 'phaserDepth', 'phaserMix',
   'rotationSpeed', 'manualYaw', 'waveSpread',
-  'waterDepth', 'masterVolume',
+  'waterDepth', 'masterVolume', 'glassSparkle',
 ];
 
 function easeInOutCubic(t) {
@@ -44,8 +46,9 @@ export class PresetMorph {
     const applyInstant = () => {
       this.engine.applyPreset(preset, { silent: true });
       for (const key of NUMERIC_KEYS) {
-        if (preset.values[key] != null && callbacks.onSliderUpdate != null) {
-          callbacks.onSliderUpdate(key, preset.values[key]);
+        const raw = preset.values[key] ?? PRESET_DEFAULTS[key];
+        if (raw != null && callbacks.onSliderUpdate != null) {
+          callbacks.onSliderUpdate(key, raw);
         }
       }
       if (callbacks.onModeUpdate != null) callbacks.onModeUpdate(preset.mode);
@@ -77,7 +80,7 @@ export class PresetMorph {
 
       for (const key of NUMERIC_KEYS) {
         const from = startRaw[key] ?? 0;
-        const to = preset.values[key] ?? from;
+        const to = preset.values[key] ?? PRESET_DEFAULTS[key] ?? from;
         const raw = from + (to - from) * eased;
         batch[key] = this.engine.rawToEngine(key, raw);
         if (callbacks.onSliderUpdate != null) {

@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SCORES — Olas de playa</title>
+  <title>olas sonoras</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
   <div class="app">
     <header>
-      <h1>Olas de playa</h1>
-      <p class="subtitle">Síntesis procedural · rotación espacial · transición al agua</p>
+      <h1>olas sonoras</h1>
+      <p class="subtitle">síntesis · espacio · arena de vidrio</p>
     </header>
 
     <section class="transport">
@@ -125,6 +125,16 @@
         </label>
       </div>
 
+      <div class="control-group control-group--glass">
+        <h2>Arena de vidrio</h2>
+        <p class="glass-hint">Destellos al romper la ola — como playas de botellas pulidas por el mar.</p>
+        <label>
+          Destellos de vidrio
+          <input type="range" id="glassSparkle" min="0" max="100" value="0" />
+          <span class="val" id="glassSparkleVal">0</span>
+        </label>
+      </div>
+
       <div class="control-group">
         <h2>Agua</h2>
         <label>
@@ -145,7 +155,8 @@
       <p class="viz-legend">
         <span class="dot listener"></span> Oyente (centro)
         <span class="dot wave"></span> Frente de ola
-        <span class="dot sea-beach"></span> Arco mar (modo arena)
+        <span class="dot sea-beach"></span> Mar
+        <span class="dot glass"></span> Vidrio
       </p>
     </section>
 

@@ -1,6 +1,11 @@
 import { createPinkNoiseBuffer, createBrownNoiseBuffer, createNoiseSource } from './noise.js';
 import { Phaser } from './phaser.js';
 import { createUnderwaterReverb } from './reverb.js';
+import {
+  GlassSparkleSynth,
+  glassFoamIntensity,
+  glassRetreatIntensity,
+} from './glass-sparkle.js';
 
 const NUM_SOURCES = 48;
 const TAU = Math.PI * 2;
@@ -101,6 +106,7 @@ export class BeachWaveEngine {
       waveSpread: 0.35,
       waterDepth: 0,
       masterVolume: 0.7,
+      glassSparkle: 0,
     };
 
     this.listenerYaw = 0;
@@ -325,6 +331,10 @@ export class BeachWaveEngine {
     this.bubbleGain.connect(this.masterGain);
     bubbleSrc.start(0);
 
+    // --- Glass sand sparkles ---
+    this.glassSparkle = new GlassSparkleSynth(ctx, this.masterGain);
+    this.glassSparkle.startShimmer(pink);
+
     this._applyParams();
     this._spawnWave();
   }
@@ -336,6 +346,9 @@ export class BeachWaveEngine {
     this.setParam('autoRotate', preset.autoRotate, { silent: true });
     for (const [key, raw] of Object.entries(preset.values)) {
       this.params[key] = this.rawToEngine(key, raw);
+    }
+    if (preset.values.glassSparkle == null) {
+      this.params.glassSparkle = 0;
     }
     if (this.ctx != null) this._applyParams();
     if (silent) this.activePresetId = preset.id;
@@ -356,6 +369,7 @@ export class BeachWaveEngine {
       waveSpread: raw / 100,
       waterDepth: raw / 100,
       masterVolume: raw / 100,
+      glassSparkle: raw / 100,
     };
     return map[key] ?? raw;
   }
@@ -374,6 +388,7 @@ export class BeachWaveEngine {
       waveSpread: Math.round(this.params.waveSpread * 100),
       waterDepth: Math.round(this.params.waterDepth * 100),
       masterVolume: Math.round(this.params.masterVolume * 100),
+      glassSparkle: Math.round(this.params.glassSparkle * 100),
     };
   }
 
@@ -424,13 +439,21 @@ export class BeachWaveEngine {
     this.bedBand.frequency.setTargetAtTime(220 + calm * 480, this.ctx.currentTime, 0.1);
     this.bedGain.gain.setTargetAtTime(0.08 + calm * 0.22, this.ctx.currentTime, 0.1);
     this.bedAmLfo.frequency.setTargetAtTime(0.035 + calm * 0.1, this.ctx.currentTime, 0.1);
-    this.reflectionGain.gain.setTargetAtTime(0.1 + calm * 0.15, this.ctx.currentTime, 0.1);
+    this.reflectionGain.gain.setTargetAtTime(
+      0.1 + calm * 0.15 + p.glassSparkle * 0.08,
+      this.ctx.currentTime,
+      0.1,
+    );
 
     this.swellGain.gain.setTargetAtTime(0.12 + calmInv * 0.18, this.ctx.currentTime, 0.1);
     this.swellLow.frequency.setTargetAtTime(90 + calmInv * 60, this.ctx.currentTime, 0.1);
     this.swellLfo.frequency.setTargetAtTime(0.025 + calmInv * 0.04, this.ctx.currentTime, 0.1);
 
-    this.waveBusGain.gain.setTargetAtTime(0.35 + calm * 0.55, this.ctx.currentTime, 0.1);
+    this.waveBusGain.gain.setTargetAtTime(
+      (0.35 + calm * 0.55) * (1 - p.glassSparkle * 0.22),
+      this.ctx.currentTime,
+      0.1,
+    );
 
     const w = p.waterDepth;
     this.waterLowpass.frequency.setTargetAtTime(12000 - w * 9500, this.ctx.currentTime, 0.15);
@@ -438,6 +461,10 @@ export class BeachWaveEngine {
     this.bubbleGain.gain.setTargetAtTime(w * 0.06 + calm * w * 0.04, this.ctx.currentTime, 0.15);
     this.reverbMix.gain.setTargetAtTime(w * 0.45, this.ctx.currentTime, 0.15);
     this.reverb.wet.gain.setTargetAtTime(0.2 + w * 0.5, this.ctx.currentTime, 0.15);
+
+    if (this.glassSparkle != null) {
+      this.glassSparkle.setAmount(p.glassSparkle);
+    }
   }
 
   _spawnWave() {
@@ -483,6 +510,7 @@ export class BeachWaveEngine {
 
     const waveGainScale = 0.28 + p.calmness * 0.35;
     const vizWaves = [];
+    const vizSparkles = [];
 
     for (let i = 0; i < NUM_SOURCES; i++) {
       const g = Math.min(1.2, gains[i] * 1.4);
@@ -494,7 +522,25 @@ export class BeachWaveEngine {
     }
 
     for (const wave of this.waves) {
-      vizWaves.push({ angle: wave.angle - this.listenerYaw, progress: wave.progress });
+      const relAngle = wave.angle - this.listenerYaw;
+      vizWaves.push({ angle: relAngle, progress: wave.progress });
+
+      const foam = glassFoamIntensity(wave.progress);
+      const retreat = glassRetreatIntensity(wave.progress);
+      const glassEnergy = Math.max(foam, retreat * 1.15);
+      if (glassEnergy > 0 && p.glassSparkle > 0.01) {
+        this.glassSparkle.trigger(
+          relAngle,
+          glassEnergy * dt * (retreat > foam ? 42 : 32) * p.glassSparkle,
+          { retreat: retreat >= foam && retreat > 0.2 },
+        );
+        if (glassEnergy > 0.25 && Math.random() < p.glassSparkle * glassEnergy * dt * 6) {
+          vizSparkles.push({
+            angle: relAngle + (Math.random() - 0.5) * 0.5,
+            hue: Math.random(),
+          });
+        }
+      }
     }
 
     if (this.onVizUpdate != null) {
@@ -503,6 +549,8 @@ export class BeachWaveEngine {
         mode: p.mode,
         waves: vizWaves,
         waterDepth: p.waterDepth,
+        glassSparkle: p.glassSparkle,
+        sparkles: vizSparkles,
       });
     }
 

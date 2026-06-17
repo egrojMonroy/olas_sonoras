@@ -4,6 +4,28 @@
  */
 export const PRESETS = [
   {
+    id: 'glass-beach',
+    name: 'Playa de vidrio',
+    description: 'Arena de botellas pulidas. Destellos al lametear la ola.',
+    mode: 'beach',
+    autoRotate: true,
+    values: {
+      calmness: 58,
+      waveDuration: 32,
+      waveSpeed: 20,
+      waveInterval: 14,
+      phaserRate: 10,
+      phaserDepth: 32,
+      phaserMix: 22,
+      rotationSpeed: 14,
+      manualYaw: 0,
+      waveSpread: 38,
+      waterDepth: 0,
+      masterVolume: 68,
+      glassSparkle: 88,
+    },
+  },
+  {
     id: 'dawn-shore',
     name: 'Amanecer en la orilla',
     description: 'Muy calmado. Olas largas, espaciadas, poco phaser.',
@@ -22,6 +44,7 @@ export const PRESETS = [
       waveSpread: 28,
       waterDepth: 0,
       masterVolume: 68,
+      glassSparkle: 0,
     },
   },
   {

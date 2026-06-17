@@ -17,7 +17,7 @@ const sliderKeys = [
   'calmness', 'waveDuration', 'waveSpeed', 'waveInterval',
   'phaserRate', 'phaserDepth', 'phaserMix',
   'rotationSpeed', 'manualYaw', 'waveSpread',
-  'waterDepth', 'masterVolume',
+  'waterDepth', 'masterVolume', 'glassSparkle',
 ];
 
 const bindings = [
@@ -33,6 +33,7 @@ const bindings = [
   { id: 'waveSpread', key: 'waveSpread', scale: (v) => v / 100 },
   { id: 'waterDepth', key: 'waterDepth', scale: (v) => v / 100 },
   { id: 'masterVolume', key: 'masterVolume', scale: (v) => v / 100 },
+  { id: 'glassSparkle', key: 'glassSparkle', scale: (v) => v / 100 },
 ];
 
 const sliderInputs = {};
@@ -302,4 +303,4 @@ btnRecord.addEventListener('click', async () => {
   }
 });
 
-viz.draw({ mode: 'beach', waves: [], waterDepth: 0 });
+viz.draw({ mode: 'beach', waves: [], waterDepth: 0, glassSparkle: 0, sparkles: [] });
